@@ -16,7 +16,7 @@ interface PaginationControlsProps {
   totalPages: number;
   rowsPerPage: number;
   onPageChange: (page: number) => void;
-  onRowsPerPageChange: (rows: number) => void;
+  onRowsPerPageChange: (value: string) => void;
 }
 
 export function PaginationControls({
@@ -30,12 +30,9 @@ export function PaginationControls({
     <div className="flex items-center justify-between py-4">
       <div className="flex items-center space-x-2">
         <span className="text-sm">Rows per page:</span>
-        <Select
-          value={rowsPerPage.toString()}
-          onValueChange={(value) => onRowsPerPageChange(Number(value))}
-        >
-          <SelectTrigger className="w-[80px]">
-            <SelectValue placeholder="Select" />
+        <Select value={rowsPerPage.toString()} onValueChange={onRowsPerPageChange}>
+          <SelectTrigger className="w-[100px]">
+            <SelectValue />
           </SelectTrigger>
           <SelectContent>
             {ROWS_PER_PAGE_OPTIONS.map((option) => (
