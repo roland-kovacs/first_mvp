@@ -69,7 +69,7 @@ export default function TablePage() {
           <form action={logout}>
             <button 
               type="submit"
-              className="flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900"
+              className="flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900 cursor-pointer"
             >
               <LogOut className="h-4 w-4" />
               Logout
