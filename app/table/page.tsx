@@ -4,8 +4,10 @@ import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
 import { PaginationControls } from "./components/PaginationControls";
 import { TableHeaderComponent } from "./components/TableHeader";
 import { sampleData } from "./data";
-import { SortColumn, SortDirection, User } from "./types";
+import { SortColumn, SortDirection } from "./types";
 import { useState } from "react";
+import { LogOut } from "lucide-react";
+import { logout } from "../components/auth/actions";
 import { Input } from "@/components/ui/input";
 
 export default function TablePage() {
@@ -37,17 +39,15 @@ export default function TablePage() {
     setCurrentPage(1);
   };
 
-  // Filter data based on search query
   const filteredData = sampleData.filter((user) =>
     user.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  // Sort the filtered data
   const sortedData = [...filteredData].sort((a, b) => {
     if (!sortColumn || !sortDirection) return 0;
 
-    const aValue = sortColumn === "skills" ? a[sortColumn].join(", ") : a[sortColumn];
-    const bValue = sortColumn === "skills" ? b[sortColumn].join(", ") : b[sortColumn];
+    const aValue = a[sortColumn];
+    const bValue = b[sortColumn];
 
     if (sortDirection === "asc") {
       return aValue > bValue ? 1 : -1;
@@ -64,14 +64,24 @@ export default function TablePage() {
   return (
     <div className="container mx-auto py-10">
       <div className="flex flex-col gap-4">
-        <h1 className="text-3xl font-bold">User Table</h1>
+        <div className="flex justify-between items-center">
+          <h1 className="text-3xl font-bold">User Table</h1>
+          <form action={logout}>
+            <button 
+              type="submit"
+              className="flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900"
+            >
+              <LogOut className="h-4 w-4" />
+              Logout
+            </button>
+          </form>
+        </div>
         <div className="w-full max-w-sm">
           <Input
             type="text"
-            placeholder="Search by name..."
+            placeholder="Search..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground transition-colors"
           />
         </div>
         <div className="rounded-md border">
