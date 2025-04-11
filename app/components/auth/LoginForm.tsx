@@ -55,9 +55,19 @@ export function LoginForm() {
                   required
                 />
               </div>
-              {(isSignup ? signupState.error : loginState.error) && (
+              {isSignup ? (
+                signupState.error ? (
+                  <div className="text-sm text-red-500 text-center">
+                    {signupState.error}
+                  </div>
+                ) : signupState === initialState ? null : (
+                  <div className="text-sm text-center">
+                    Please check your email to confirm your account
+                  </div>
+                )
+              ) : loginState.error && (
                 <div className="text-sm text-red-500 text-center">
-                  {isSignup ? signupState.error : loginState.error}
+                  {loginState.error}
                 </div>
               )}
             </div>
