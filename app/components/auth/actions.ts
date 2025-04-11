@@ -42,3 +42,9 @@ export async function signup(prevState: AuthState, formData: FormData): Promise<
 
   return { error: null }
 }
+
+export async function logout() {
+  const supabase = await createClient()
+  await supabase.auth.signOut()
+  redirect('/')
+}
