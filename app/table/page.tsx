@@ -39,17 +39,15 @@ export default function TablePage() {
     setCurrentPage(1);
   };
 
-  // Filter data based on search query
   const filteredData = sampleData.filter((user) =>
     user.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  // Sort the filtered data
   const sortedData = [...filteredData].sort((a, b) => {
     if (!sortColumn || !sortDirection) return 0;
 
-    const aValue = sortColumn === "skills" ? a[sortColumn].join(", ") : a[sortColumn];
-    const bValue = sortColumn === "skills" ? b[sortColumn].join(", ") : b[sortColumn];
+    const aValue = a[sortColumn];
+    const bValue = b[sortColumn];
 
     if (sortDirection === "asc") {
       return aValue > bValue ? 1 : -1;

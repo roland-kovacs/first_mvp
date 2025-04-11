@@ -14,37 +14,29 @@ export function TableHeaderComponent({
   sortDirection,
   onSort,
 }: TableHeaderProps) {
-  const getSortIndicator = (column: SortColumn) => {
-    if (sortColumn !== column) return null;
-    return sortDirection === "asc" ? "↑" : "↓";
-  };
-
   return (
     <TableHeader>
       <TableRow>
         <TableHead
-          className="cursor-pointer hover:bg-gray-100"
+          className="cursor-pointer"
           onClick={() => onSort("name")}
         >
-          Name {getSortIndicator("name")}
+          Name {sortColumn === "name" && (sortDirection === "asc" ? "↑" : "↓")}
         </TableHead>
         <TableHead
-          className="cursor-pointer hover:bg-gray-100"
+          className="cursor-pointer"
           onClick={() => onSort("email")}
         >
-          Email {getSortIndicator("email")}
+          Email {sortColumn === "email" && (sortDirection === "asc" ? "↑" : "↓")}
         </TableHead>
         <TableHead
-          className="cursor-pointer hover:bg-gray-100"
+          className="cursor-pointer"
           onClick={() => onSort("birthdate")}
         >
-          Birthdate {getSortIndicator("birthdate")}
+          Birthdate {sortColumn === "birthdate" && (sortDirection === "asc" ? "↑" : "↓")}
         </TableHead>
-        <TableHead
-          className="cursor-pointer hover:bg-gray-100"
-          onClick={() => onSort("skills")}
-        >
-          Skills {getSortIndicator("skills")}
+        <TableHead>
+          Skills
         </TableHead>
       </TableRow>
     </TableHeader>
