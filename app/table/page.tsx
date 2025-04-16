@@ -4,18 +4,22 @@ import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
 import { PaginationControls } from "./components/PaginationControls";
 import { TableHeaderComponent } from "./components/TableHeader";
 import { sampleData } from "./data";
-import { SortColumn, SortDirection } from "./types";
+import { User, SortColumn, SortDirection } from "./types";
 import { useState } from "react";
 import { LogOut } from "lucide-react";
 import { logout } from "../components/auth/actions";
-import { Input } from "@/components/ui/input";
 
 export default function TablePage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [sortColumn, setSortColumn] = useState<SortColumn>(null);
   const [sortDirection, setSortDirection] = useState<SortDirection>(null);
-  const [searchQuery, setSearchQuery] = useState("");
+  const [columnFilters, setColumnFilters] = useState<Record<string, string>>({
+    name: "",
+    email: "",
+    birthdate: "",
+    skills: "",
+  });
 
   const handleSort = (column: SortColumn) => {
     if (sortColumn === column) {
@@ -39,10 +43,28 @@ export default function TablePage() {
     setCurrentPage(1);
   };
 
-  const filteredData = sampleData.filter((user) =>
-    user.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const handleFilterChange = (column: string, value: string) => {
+    setColumnFilters(prev => ({
+      ...prev,
+      [column]: value
+    }));
+    setCurrentPage(1);
+  };
 
+  const filteredData = sampleData.filter((user) => {
+    // Check if user matches all column filters
+    return Object.entries(columnFilters).every(([column, filterValue]) => {
+      if (!filterValue) return true; // Skip empty filters
+      
+      const userValue = column === "skills" 
+        ? user[column].join(", ").toLowerCase()
+        : String(user[column as keyof User]).toLowerCase();
+      
+      return userValue.includes(filterValue.toLowerCase());
+    });
+  });
+
+  // Sort the filtered data
   const sortedData = [...filteredData].sort((a, b) => {
     if (!sortColumn || !sortDirection) return 0;
 
@@ -76,27 +98,21 @@ export default function TablePage() {
             </button>
           </form>
         </div>
-        <div className="w-full max-w-sm">
-          <Input
-            type="text"
-            placeholder="Search..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
-        </div>
         <div className="rounded-md border">
           <Table>
             <TableHeaderComponent
               sortColumn={sortColumn}
               sortDirection={sortDirection}
               onSort={handleSort}
+              columnFilters={columnFilters}
+              onFilterChange={handleFilterChange}
             />
             <TableBody>
               {currentData.map((user) => (
-                <TableRow key={user.id}>
-                  <TableCell>{user.name}</TableCell>
-                  <TableCell>{user.email}</TableCell>
-                  <TableCell>{user.birthdate}</TableCell>
+                <TableRow key={user.id} className="border-b">
+                  <TableCell className="border-r">{user.name}</TableCell>
+                  <TableCell className="border-r">{user.email}</TableCell>
+                  <TableCell className="border-r">{user.birthdate}</TableCell>
                   <TableCell>{user.skills.join(", ")}</TableCell>
                 </TableRow>
               ))}
