@@ -1,19 +1,21 @@
 "use client";
 
-import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
+import { Table } from "@/components/ui/table";
 import { PaginationControls } from "./components/PaginationControls";
 import { TableHeaderComponent } from "./components/TableHeader";
+import { TableContent } from "./components/TableContent";
+import { SearchBar } from "./components/SearchBar";
+import { PageHeader } from "./components/PageHeader";
 import { sampleData } from "./data";
 import { User, SortColumn, SortDirection } from "./types";
 import { useState } from "react";
-import { LogOut } from "lucide-react";
-import { logout } from "../components/auth/actions";
 
 export default function TablePage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [sortColumn, setSortColumn] = useState<SortColumn>(null);
   const [sortDirection, setSortDirection] = useState<SortDirection>(null);
+  const [searchQuery, setSearchQuery] = useState("");
   const [columnFilters, setColumnFilters] = useState<Record<string, string>>({
     name: "",
     email: "",
@@ -23,13 +25,15 @@ export default function TablePage() {
 
   const handleSort = (column: SortColumn) => {
     if (sortColumn === column) {
-      if (sortDirection === "asc") {
-        setSortDirection("desc");
-      } else if (sortDirection === "desc") {
-        setSortDirection(null);
+      const nextDirection = {
+        asc: "desc",
+        desc: null,
+        null: "asc"
+      }[sortDirection || "null"] as SortDirection;
+      
+      setSortDirection(nextDirection);
+      if (nextDirection === null) {
         setSortColumn(null);
-      } else {
-        setSortDirection("asc");
       }
     } else {
       setSortColumn(column);
@@ -52,9 +56,19 @@ export default function TablePage() {
   };
 
   const filteredData = sampleData.filter((user) => {
-    // Check if user matches all column filters
+    if (searchQuery) {
+      const searchLower = searchQuery.toLowerCase();
+      const matchesSearch = 
+        user.name.toLowerCase().includes(searchLower) ||
+        user.email.toLowerCase().includes(searchLower) ||
+        user.birthdate.toLowerCase().includes(searchLower) ||
+        user.skills.some(skill => skill.toLowerCase().includes(searchLower));
+      
+      if (!matchesSearch) return false;
+    }
+
     return Object.entries(columnFilters).every(([column, filterValue]) => {
-      if (!filterValue) return true; // Skip empty filters
+      if (!filterValue) return true;
       
       const userValue = column === "skills" 
         ? user[column].join(", ").toLowerCase()
@@ -64,7 +78,6 @@ export default function TablePage() {
     });
   });
 
-  // Sort the filtered data
   const sortedData = [...filteredData].sort((a, b) => {
     if (!sortColumn || !sortDirection) return 0;
 
@@ -86,18 +99,11 @@ export default function TablePage() {
   return (
     <div className="container mx-auto py-10">
       <div className="flex flex-col gap-4">
-        <div className="flex justify-between items-center">
-          <h1 className="text-3xl font-bold">User Table</h1>
-          <form action={logout}>
-            <button 
-              type="submit"
-              className="flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900 cursor-pointer"
-            >
-              <LogOut className="h-4 w-4" />
-              Logout
-            </button>
-          </form>
-        </div>
+        <PageHeader />
+        <SearchBar 
+          searchQuery={searchQuery} 
+          onSearchChange={setSearchQuery} 
+        />
         <div className="rounded-md border">
           <Table>
             <TableHeaderComponent
@@ -107,16 +113,10 @@ export default function TablePage() {
               columnFilters={columnFilters}
               onFilterChange={handleFilterChange}
             />
-            <TableBody>
-              {currentData.map((user) => (
-                <TableRow key={user.id} className="border-b">
-                  <TableCell className="border-r">{user.name}</TableCell>
-                  <TableCell className="border-r">{user.email}</TableCell>
-                  <TableCell className="border-r">{user.birthdate}</TableCell>
-                  <TableCell>{user.skills.join(", ")}</TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
+            <TableContent 
+              data={currentData} 
+              searchQuery={searchQuery} 
+            />
           </Table>
         </div>
         <PaginationControls
