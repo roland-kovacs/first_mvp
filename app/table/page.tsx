@@ -8,12 +8,16 @@ import { User, SortColumn, SortDirection } from "./types";
 import { useState } from "react";
 import { LogOut } from "lucide-react";
 import { logout } from "../components/auth/actions";
+import { Input } from "@/components/ui/input";
+import { Search, X } from "lucide-react";
+import { highlightText } from "./utils";
 
 export default function TablePage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [sortColumn, setSortColumn] = useState<SortColumn>(null);
   const [sortDirection, setSortDirection] = useState<SortDirection>(null);
+  const [searchQuery, setSearchQuery] = useState("");
   const [columnFilters, setColumnFilters] = useState<Record<string, string>>({
     name: "",
     email: "",
@@ -51,7 +55,20 @@ export default function TablePage() {
     setCurrentPage(1);
   };
 
+  // Filter data based on search query and column filters
   const filteredData = sampleData.filter((user) => {
+    // Check if user matches the global search query
+    if (searchQuery) {
+      const searchLower = searchQuery.toLowerCase();
+      const matchesSearch = 
+        user.name.toLowerCase().includes(searchLower) ||
+        user.email.toLowerCase().includes(searchLower) ||
+        user.birthdate.toLowerCase().includes(searchLower) ||
+        user.skills.some(skill => skill.toLowerCase().includes(searchLower));
+      
+      if (!matchesSearch) return false;
+    }
+
     // Check if user matches all column filters
     return Object.entries(columnFilters).every(([column, filterValue]) => {
       if (!filterValue) return true; // Skip empty filters
@@ -83,6 +100,11 @@ export default function TablePage() {
   const endIndex = startIndex + rowsPerPage;
   const currentData = sortedData.slice(startIndex, endIndex);
 
+  const highlightMatch = (text: string) => {
+    const highlighted = highlightText(text, searchQuery);
+    return <span dangerouslySetInnerHTML={{ __html: highlighted }} />;
+  };
+
   return (
     <div className="container mx-auto py-10">
       <div className="flex flex-col gap-4">
@@ -98,6 +120,26 @@ export default function TablePage() {
             </button>
           </form>
         </div>
+        <div className="w-full max-w-sm">
+          <div className="relative">
+            <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-500" />
+            <Input
+              type="text"
+              placeholder="Search in all columns..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-8 pr-8"
+            />
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery("")}
+                className="absolute right-2 top-2.5 h-4 w-4 text-gray-500 hover:text-gray-700"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            )}
+          </div>
+        </div>
         <div className="rounded-md border">
           <Table>
             <TableHeaderComponent
@@ -110,10 +152,10 @@ export default function TablePage() {
             <TableBody>
               {currentData.map((user) => (
                 <TableRow key={user.id} className="border-b">
-                  <TableCell className="border-r">{user.name}</TableCell>
-                  <TableCell className="border-r">{user.email}</TableCell>
-                  <TableCell className="border-r">{user.birthdate}</TableCell>
-                  <TableCell>{user.skills.join(", ")}</TableCell>
+                  <TableCell className="border-r">{highlightMatch(user.name)}</TableCell>
+                  <TableCell className="border-r">{highlightMatch(user.email)}</TableCell>
+                  <TableCell className="border-r">{highlightMatch(user.birthdate)}</TableCell>
+                  <TableCell>{highlightMatch(user.skills.join(", "))}</TableCell>
                 </TableRow>
               ))}
             </TableBody>
